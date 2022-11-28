@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>say_it</title>
+</head>
+<style type="text/css">
+	body {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+	.break {
+		flex-basis: 100%;
+		height: 0;
+	}
+	.top {
+		margin-top: 400px;
+		top: 500px;
+	}
+</style>
+<body>
+	<div class="top"></div>
+	<div class="break"></div>
+	<input type="text" id="text_to_speech" name="text_to_speech" value="Привет мир">
+	<div class="break"></div>
+	<button id="say_button">Say it</button>
+</body>
+<script type="text/javascript">
+
+const alph1 = ["б", "в", "г", "д", "ж", "з", "к", "л", "м", "н", "п", "р", "с", "т", "ф", "х", "ц", "ч", "ш", "щ"];
+	const alph2 = ["а", "о", "у", "э", "и", "ы", "ь"];
+	const alph3 = ["я", "ё", "ю", "е"];
+	const event = new Event('play_snd');
+
+
+	function player(sounds, i) {
+		sounds[i].play();
+	}
+
+	function sleep(milliseconds) {
+		const date = Date.now();
+		let currentDate = null;
+		do {
+			currentDate = Date.now();
+		} while (currentDate - date < milliseconds);
+	}
+
+	document.getElementById("say_button").addEventListener("click", function(){
+		let _text = document.getElementById("text_to_speech").value;
+		_text = _text.toLowerCase();
+		let words = [];
+		let intervals = [];
+		let sounds = [];
+		let symb1 = "";
+		let symb2 = "";
+		while (_text.length > 1){
+			symb1 = _text.substring(0, 1);
+			if (alph1.indexOf(symb1) != -1) {
+				symb2 = _text.substring(1, 2);
+				if (alph2.indexOf(symb2) != -1 || alph3.indexOf(symb2) != -1) {
+					words.push(symb1+symb2);
+					intervals.push(240);
+					_text = _text.substring(2, _text.length);
+				} else {
+					words.push(symb1);
+					intervals.push(160);
+					_text = _text.substring(1, _text.length);
+				}
+			} else if (alph2.indexOf(symb1) != -1) {
+				words.push(symb1);
+				intervals.push(250);
+				_text = _text.substring (1, _text.length);
+			} else if (alph3.indexOf(symb1) != -1) {
+				words.push("й");
+				intervals.push(100);
+				words.push(alph2[alph3.indexOf(symb1)]);
+				intervals.push(250);
+				_text = _text.substring(1, _text.length);
+			} else {
+				if (symb1 == "ъ") {
+					words.push("ъ");
+					intervals.push(300);
+				} else {
+					words.push("empty");
+					intervals.push(300);
+				}
+				_text = _text.substring(1, _text.length);
+			}
+		}
+		if (_text.length != 0) {
+			if (_text != "ь") {
+				words.push(_text)
+				intervals.push(0);
+			}
+		}
+		console.log(words);
+		for (let i = 0; i<words.length; i++){
+			sounds.push(new Audio('my_symbs/'+words[i]+'.wav'));
+		}
+		let interval = 0;
+		for (let i = 0; i<words.length; i++){
+			setTimeout(function(){ 
+				player(sounds, i);
+			}, interval);
+			interval += intervals[i];
+		}
+	})
+</script>
+</html>
